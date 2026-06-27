@@ -1,0 +1,24 @@
+   QUERIES DO BANCO DE DADOS - ENCURTADOR
+
+-- 1. INSERÇÃO COM RETORNO (Criação da URL)
+-- Clara, quando você receber o POST do frontend com a URL longa, execute esta query.
+-- O banco vai salvar a URL e te devolver o ID numérico gerado. Você vai pegar esse ID e passar pro Kaio
+INSERT INTO urls (long_url) 
+VALUES (?) 
+RETURNING id;
+
+
+-- 2. ATUALIZAÇÃO DO CÓDIGO CURTO
+-- Depois que o Kaio te devolver a Base62 (ex: '2TX'), você precisa salvar esse código na mesma linha do banco
+-- Execute esta query passando o código curto e o ID
+UPDATE urls 
+SET short_code = ? 
+WHERE id = ?;
+
+
+-- 3. BUSCA PARA REDIRECIONAMENTO (O Endpoint GET)
+-- Quando o usuário acessar "nosso-site.com/2TX", execute esta query passando o '2TX'.
+-- Ela vai te devolver a URL longa original para você disparar o Status 302
+SELECT long_url 
+FROM urls 
+WHERE short_code = ?;
