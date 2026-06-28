@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Encurtador de URL</title>
+
+    <link rel="stylesheet" href="style.css">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div class="background"></div>
+
+<div class="container">
+
+    <div class="logo">
+        🔗
+    </div>
+
+    <h1>Encurtador de Links</h1>
+
+    <p class="subtitle">
+        Cole sua URL abaixo e gere um link curto em segundos.
+    </p>
+
+    <form id="form">
+        <input
+            id="url"
+            type="text"
+            placeholder="https://exemplo.com/minha-url"
+            required
+        >
+
+        <button type="submit">
+            Encurtar
+        </button>
+    </form>
+
+    <div id="loading" class="loading hidden">
+        Gerando link...
+    </div>
+
+    <div id="resultado" class="resultado hidden">
+        <h3>Seu link ficou pronto!</h3>
+
+        <div class="box">
+
+            <input id="linkFinal" readonly>
+
+            <button id="copiar">
+                Copiar
+            </button>
+
+        </div>
+    </div>
+</div>
+
+<script src="script.js"></script>
+
+</body>
+</html>
