@@ -1,0 +1,78 @@
+import sqlite3
+from flask import Flask, request, jsonify, redirect
+from flask_cors import CORS
+from base62 import codificar  
+
+app = Flask(__name__)
+CORS(app)  
+
+
+def conectar_banco():
+    return sqlite3.connect('banco.db')
+
+
+# POST 
+@app.route('/api/encurtar', methods=['POST'])
+def criar_link():
+    dados = request.get_json()
+
+    if not dados or 'long_url' not in dados:
+        return jsonify({"erro": "Você precisa enviar uma 'long_url' no JSON!"}), 400
+
+    url_original = dados['long_url'].strip()
+
+    if not url_original.startswith(('http://', 'https://')):
+        url_original = 'http://' + url_original
+
+    conexao = conectar_banco()
+    cursor = conexao.cursor()
+
+    try:
+        # Salva a URL e devolve o ID gerado
+        cursor.execute("INSERT INTO urls (long_url) VALUES (?) RETURNING id;", (url_original,))
+        id_gerado = cursor.fetchone()[0]
+
+        # Chama a função de codificação
+        codigo_curto = codificar(id_gerado)
+
+        # Atualiza a linha salvando o código base62
+        cursor.execute("UPDATE urls SET short_code = ? WHERE id = ?;", (codigo_curto, id_gerado))
+        conexao.commit()
+
+        # Devolve para o front
+        base_url = request.host_url.rstrip('/')
+
+        return jsonify({
+            "mensagem": "Encurtado com sucesso!",
+            "short_code": codigo_curto,
+            "url_completa": f"{base_url}/{codigo_curto}"
+        }), 201
+
+    except Exception as e:
+        conexao.rollback()
+        return jsonify({"erro": f"Erro interno no banco: {str(e)}"}), 500
+    finally:
+        conexao.close()
+
+
+# GET
+@app.route('/<short_code>', methods=['GET'])
+def redirecionar(short_code):
+    conexao = conectar_banco()
+    cursor = conexao.cursor()
+
+    # Query para buscar o link original
+    cursor.execute("SELECT long_url FROM urls WHERE short_code = ?;", (short_code,))
+    resultado = cursor.fetchone()
+    conexao.close()
+
+    if resultado:
+        url_destino = resultado[0]
+        return redirect(url_destino, code=302)  
+    else:
+        return jsonify({"erro": "Este código de link não existe!"}), 404
+
+
+if __name__ == '__main__':
+    print("Servidor rodando em http://127.0.0.1:5000")
+    app.run(debug=True, port=5000)
